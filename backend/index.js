@@ -1,22 +1,16 @@
+const cors = require('cors')
 const fs = require('fs');
 const ytpl = require('ytpl');
 const path = require('path');
-const rimraf = require("rimraf");
+const rimraf = require('rimraf');
 const zip = require('zip-a-folder');
 const ytdl = require('ytdl-core');
 const fluentffmpeg = require('fluent-ffmpeg');
 
 var express = require('express');
 var app = express();
-const port = 3000;
-
-async function downloadPlaylist(playlistLink) {
-    try {
-        return await download(playlistLink);
-    } catch (err) {
-        console.log(err);
-    }
-}
+const port = 5000;
+app.use(cors());
 
 async function download(playlistLink) {
     const playlist = await ytpl(playlistLink);
@@ -43,17 +37,23 @@ function saveMp3(playlistTitle, element) {
             console.log("Skipped " + element.title + "as it already exists.");
             return resolve();
         }
-        fluentffmpeg(ytdl(element.url, { 'filter': 'audioonly' }))
-            .audioCodec('libmp3lame')
-            .save(filename)
-            .on('end', () => {
-                console.log(element.title + " downloaded");
-                resolve();
-            })
-            .on('err', (err) => {
-                return reject(err);
-            })
-            .run()
+        try {
+            fluentffmpeg(ytdl(element.url, { 'filter': 'audioonly' }))
+                .audioCodec('libmp3lame')
+                .save(filename)
+                .on('end', () => {
+                    console.log(element.title + " downloaded");
+                    resolve();
+                })
+                .on('err', (err) => {
+                    console.log(err)
+                    resolve();
+                })
+                .run()
+        }
+        catch (e) {
+            console.log("erro ao fazer download")
+        }
     });
 }
 
@@ -71,10 +71,10 @@ async function zipDirectory(sourceDir, outPath) {
 
 
 //Filestream middleware that takes in the file path as the parameter
-async function streamZip(request, response, next) {
+async function streamPlaylistYoutub(request, response, next) {
     const { linkPlaylist } = request.query;
 
-    const pathToZip = await downloadPlaylist(linkPlaylist);
+    const pathToZip = await download(linkPlaylist);
 
     //Create a readable stream
     const readableStream = fs.createReadStream(`${pathToZip}.zip`);
@@ -99,7 +99,7 @@ async function streamZip(request, response, next) {
 
 //The route that you want to hit using the front-end to get the file
 //Call the middleware and pass in the path to the zip
-app.get('/download', streamZip, (request, response) => {
+app.get('/api/download', streamPlaylistYoutub, (request, response) => {
     //Send the data to the front end by calling res
     // response;
     response
