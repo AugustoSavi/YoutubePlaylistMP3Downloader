@@ -49,7 +49,7 @@ export default function Home() {
         <span className={styles.input}>
           <input
             type="text"
-            placeholder="Cole o link da playlist do youtube"
+            placeholder="https://www.youtube.com/playlist?list=SAISOsjASOASHJXSsaSJIA"
             onChange={handleChangeLink}
             value={link}
             disabled={loading}
@@ -84,6 +84,17 @@ export default function Home() {
           Powered by{' '}
           <span className={styles.logo}>
             <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
+          </span>
+        </a>
+
+        <a
+          href="https://github.com/AugustoSavi"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Developed by{' '}
+          <span className={styles.logo}>
+            <Image src="/github.svg" alt="Github Logo" width={30} height={20} />
           </span>
         </a>
       </footer>
